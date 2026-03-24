@@ -5,30 +5,29 @@
 
 #include "utils/color.h"
 
-struct Renderer;
-
-struct Texture {
-    SDL_Texture *handle;
-    int          w;
-    int          h;
-
-    // Allocates a TEXTUREACCESS_TARGET texture. Calls exit(1) on failure.
-    static Texture New(Renderer &r, int w, int h);
-    void destroy();
-};
-
 struct Renderer {
-    SDL_Renderer *handle;
+    uint32_t*     pixels;       // heap-allocated CPU framebuffer, width × height
+    int           width;
+    int           height;
+    SDL_Renderer* sdl_renderer;
+    SDL_Texture*  upload_tex;   // STREAMING texture used only inside present()
+    uint32_t      draw_color;   // packed ARGB8888, written by set_color()
+
+    static Renderer New(SDL_Renderer *sdl_r, int w, int h);
+    void destroy();
 
     void set_color(Color c);
-    void fill_rect(float x, float y, float w, float h);
-    void draw_line(float x0, float y0, float x1, float y1);
     void clear();
-    // Blit tex onto the current target at destination rect (x, y, w, h).
-    void blit(Texture &tex, float x, float y, float w, float h);
-    void set_target(Texture &tex);
-    void reset_target();
+    void fill_rect(float x, float y, float w, float h);
+    void draw_rect(float x, float y, float w, float h); // outline
+    void draw_line(float x0, float y0, float x1, float y1);
+    void draw_circle(float cx, float cy, float radius); // outline
+    void fill_circle(float cx, float cy, float radius); // filled
+    // Upload pixels to SDL, blit to window, flip.
     void present();
+
+  private:
+    void plot(int x, int y);
 };
 
 #endif

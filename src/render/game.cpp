@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-Game Game::New(const char *title, int width, int height) {
+Game Game::New(const char *title, int width, int height, Player player, Scene scene) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         exit(1);
@@ -25,29 +25,35 @@ Game Game::New(const char *title, int width, int height) {
         exit(1);
     }
 
-    // Capture the mouse: hide cursor and report relative motion only.
     SDL_SetWindowRelativeMouseMode(win, true);
 
     Game g;
-    g.window          = win;
-    g.renderer.handle = rend;
+    g.window       = win;
+    g.player       = player;
+    g.scene        = scene;
+    g.scene.player = &g.player;
+    g.raycaster    = Raycaster::New();
+    g.renderer     = Renderer::New(rend, width, height);
     return g;
 }
 
 void Game::destroy() {
-    SDL_DestroyRenderer(renderer.handle);
+    renderer.destroy();
     SDL_DestroyWindow(window);
     SDL_Quit();
-    renderer.handle = nullptr;
-    window          = nullptr;
+    window = nullptr;
 }
 
 uint64_t Game::begin_frame() {
     return SDL_GetTicks();
 }
 
+void Game::handle_input(const Input &input) {
+    player.direction += input.mouse_dx * Constants::MOUSE_SENSITIVITY;
+    player.handle_input(scene, input);
+}
+
 void Game::end_frame(uint64_t frame_start_ticks) {
-    renderer.present();
     uint64_t frame_ms = 1000 / Constants::FPS;
     uint64_t elapsed  = SDL_GetTicks() - frame_start_ticks;
     if (elapsed < frame_ms) {
@@ -69,17 +75,14 @@ Input Game::poll_events() {
         if (event.type == SDL_EVENT_QUIT) {
             input.quit = true;
         }
-        if (event.type == SDL_EVENT_KEY_DOWN &&
-            event.key.scancode == SDL_SCANCODE_ESCAPE) {
+        if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE) {
             input.quit = true;
         }
-        // Accumulate horizontal mouse motion; caller applies MOUSE_SENSITIVITY.
         if (event.type == SDL_EVENT_MOUSE_MOTION) {
             input.mouse_dx += event.motion.xrel;
         }
     }
 
-    // Sample keyboard state for held movement keys.
     const bool *keys   = SDL_GetKeyboardState(nullptr);
     input.forward      = keys[SDL_SCANCODE_W];
     input.backward     = keys[SDL_SCANCODE_S];
