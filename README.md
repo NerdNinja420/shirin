@@ -1,5 +1,7 @@
 # Shirin - raycasting engine in C++ / SDL3
 
+![Shirin](./assets/shirin.png)
+
 ## Controls
 
 | Input   | Action         |
