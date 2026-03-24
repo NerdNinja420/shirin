@@ -6,12 +6,12 @@
 #include "utils/color.h"
 
 struct Renderer {
-    uint32_t*     pixels;       // heap-allocated CPU framebuffer, width × height
-    int           width;
-    int           height;
-    SDL_Renderer* sdl_renderer;
-    SDL_Texture*  upload_tex;   // STREAMING texture used only inside present()
-    uint32_t      draw_color;   // packed ARGB8888, written by set_color()
+    uint32_t *pixels; // heap-allocated CPU framebuffer, width × height
+    int width;
+    int height;
+    SDL_Renderer *sdl_renderer;
+    SDL_Texture *upload_tex; // STREAMING texture used only inside present()
+    uint32_t draw_color;     // packed ARGB8888, written by set_color()
 
     static Renderer New(SDL_Renderer *sdl_r, int w, int h);
     void destroy();

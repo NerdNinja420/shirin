@@ -25,59 +25,59 @@ Vec2 Vec2::zero() {
 
 Vec2 Vec2::operator+(Vec2 other) const {
     Vec2 r;
-    r.x = x + other.x;
-    r.y = y + other.y;
+    r.x = this->x + other.x;
+    r.y = this->y + other.y;
     return r;
 }
 
 Vec2 Vec2::operator-(Vec2 other) const {
     Vec2 r;
-    r.x = x - other.x;
-    r.y = y - other.y;
+    r.x = this->x - other.x;
+    r.y = this->y - other.y;
     return r;
 }
 
 Vec2 Vec2::operator*(float scalar) const {
     Vec2 r;
-    r.x = x * scalar;
-    r.y = y * scalar;
+    r.x = this->x * scalar;
+    r.y = this->y * scalar;
     return r;
 }
 
 Vec2 Vec2::operator/(float scalar) const {
     Vec2 r;
-    r.x = x / scalar;
-    r.y = y / scalar;
+    r.x = this->x / scalar;
+    r.y = this->y / scalar;
     return r;
 }
 
 Vec2 Vec2::operator-() const {
     Vec2 r;
-    r.x = -x;
-    r.y = -y;
+    r.x = -this->x;
+    r.y = -this->y;
     return r;
 }
 
 bool Vec2::operator==(Vec2 other) const {
-    return x == other.x && y == other.y;
+    return this->x == other.x && this->y == other.y;
 }
 
 float Vec2::length() const {
-    return sqrtf(x * x + y * y);
+    return sqrtf(this->x * this->x + this->y * this->y);
 }
 
 Vec2 Vec2::normalize() const {
-    return (*this) / length();
+    return (*this) / this->length();
 }
 
 float Vec2::dot(Vec2 other) const {
-    return x * other.x + y * other.y;
+    return this->x * other.x + this->y * other.y;
 }
 
 Vec2 Vec2::rot90() const {
     Vec2 r;
-    r.x = -y;
-    r.y = x;
+    r.x = -this->y;
+    r.y = this->x;
     return r;
 }
 

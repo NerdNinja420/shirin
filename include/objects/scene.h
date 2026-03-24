@@ -1,8 +1,6 @@
 #ifndef SCENE_H_
 #define SCENE_H_
 
-#include "math/vec2.h"
-
 constexpr int SCENE_COLS = 32;
 constexpr int SCENE_ROWS = 15;
 
