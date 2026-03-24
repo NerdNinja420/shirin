@@ -1,13 +1,8 @@
-/// @file render/raycaster.cpp
-/// @brief DDA raycasting engine implementation.
-
 #include "render/raycaster.h"
-#include "world/constants.h"
+#include "utils/constants.h"
 
-#include <algorithm> // std::max, std::min
-#include <cmath>     // ceilf, floorf, nextafterf
-
-// --- Factory / lifecycle ---
+#include <algorithm>
+#include <cmath>
 
 Raycaster Raycaster::New(Renderer &r) {
     Raycaster rc;
@@ -18,8 +13,6 @@ Raycaster Raycaster::New(Renderer &r) {
 void Raycaster::destroy() {
     texture.destroy();
 }
-
-// --- DDA helpers ---
 
 float Raycaster::delta_t(float p, float dp) const {
     if (dp > 0.0f) return (ceilf(p) - p) / dp;
@@ -94,10 +87,7 @@ bool Raycaster::cast_ray(Vec2 p1, Vec2 p2, const Scene &scene, Vec2 &hit) const 
     return false;
 }
 
-// --- Fog helper ---
-
-/// @brief Linear-interpolate a wall color toward the fog/ceiling color.
-///        t = 0 → full wall color,  t = 1 → fully fogged (matches ceiling).
+// t = 0 → full wall color,  t = 1 → fully fogged (matches ceiling).
 static Color apply_fog(Color c, float perp_dist) {
     float t = perp_dist / Constants::FOG_DISTANCE;
     if (t > 1.0f) t = 1.0f;
@@ -107,8 +97,6 @@ static Color apply_fog(Color c, float perp_dist) {
         (uint8_t)((float)c.g * (1.0f - t) + (float)fog.g * t),
         (uint8_t)((float)c.b * (1.0f - t) + (float)fog.b * t));
 }
-
-// --- Main render ---
 
 void Raycaster::render(const Player &player, const Scene &scene, Renderer &r) {
     r.set_target(texture);
