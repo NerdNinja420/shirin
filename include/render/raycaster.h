@@ -2,16 +2,12 @@
 #define RAYCASTER_H_
 
 #include "math/vec2.h"
-#include "render/renderer.h"
-#include "objects/player.h"
 #include "objects/scene.h"
+#include "render/renderer.h"
 
 struct Raycaster {
-    Texture texture;
-
-    static Raycaster New(Renderer &r);
-    void destroy();
-    void render(const Player &player, const Scene &scene, Renderer &r);
+    static Raycaster New();
+    void render(const Scene &scene, Renderer &r);
 
   private:
     // Returns INFINITY_VAL if dp == 0 (ray parallel to axis).
