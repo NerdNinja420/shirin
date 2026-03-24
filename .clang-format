@@ -1,0 +1,34 @@
+AllowShortFunctionsOnASingleLine: Empty                # Only empty function bodies on one line (Empty, All)
+AllowShortBlocksOnASingleLine: Empty                  # Only empty blocks on one line 
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse    # Allow if/else on one line 
+# AwShortCaseLabelsOnASingleLine: true                # Allow short case labels on one line
+AllowShortLoopsOnASingleLine: true                    # Allow short for/while on one line
+AlwaysBreakAfterReturnType: None                      # Keep return type on same line
+AlwaysBreakTemplateDeclarations: Yes                  # Put the Declaration after template on the next line
+AllowAllArgumentsOnNextLine: false                    # Don't pack all args on next line together
+AlignAfterOpenBracket: Align                          # Break after ( and indent args
+AllowShortLambdasOnASingleLine: None                  # Don't inline lambdas
+AllowAllParametersOfDeclarationOnNextLine: false
+
+BinPackArguments: false                               # Each argument on its own line if they don't fit
+BinPackParameters: false                              # disable packing multiple params per line when breaking
+
+IndentWidth: 4                                        # Spaces per indentation level
+ColumnLimit: 100                                      # Max line width before wrapping
+IndentCaseLabels: true                                # Indent case labels inside switch
+NamespaceIndentation: All                             # Indent inside namespaces
+
+BreakBeforeBraces: Custom                             # Required for BraceWrapping to take effect
+
+BraceWrapping:
+  AfterControlStatement: Never                        # No brace wrap after if/for/while 
+  AfterEnum: false                                    # Opening brace on same line as enum
+  AfterStruct: false                                  # Opening brace on same line as struct
+  AfterUnion: false                                   # Opening brace on same line as union
+  BeforeElse: false                                   # } else { on same line
+  AfterFunction: false                                # This puts the brace on a new line for functions
+  BeforeLambdaBody: false                             # Lambda brace on same line
+  SplitEmptyFunction: false                           # Keep empty functions as {}
+  SplitEmptyRecord: false                             # Keep empty structs/classes as {}
+  SplitEmptyNamespace: false                          # Keep empty namespaces as {}
+   
