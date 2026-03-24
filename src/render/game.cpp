@@ -1,13 +1,8 @@
-/// @file render/game.cpp
-/// @brief SDL3 implementation of the Game lifecycle and event translation.
-
 #include "render/game.h"
-#include "world/constants.h"
+#include "utils/constants.h"
 
-#include <cstdio>   // fprintf
-#include <cstdlib>  // exit
-
-// --- Factory / lifecycle ---
+#include <cstdio>
+#include <cstdlib>
 
 Game Game::New(const char *title, int width, int height) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -47,8 +42,6 @@ void Game::destroy() {
     window          = nullptr;
 }
 
-// --- Frame timing ---
-
 uint64_t Game::begin_frame() {
     return SDL_GetTicks();
 }
@@ -61,8 +54,6 @@ void Game::end_frame(uint64_t frame_start_ticks) {
         SDL_Delay((uint32_t)(frame_ms - elapsed));
     }
 }
-
-// --- Event / input translation ---
 
 Input Game::poll_events() {
     Input input;

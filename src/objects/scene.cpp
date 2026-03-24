@@ -1,14 +1,8 @@
-/// @file world/scene.cpp
-/// @brief Scene construction and map query implementations.
-
-#include "world/scene.h"
-#include "world/constants.h"
+#include "objects/scene.h"
+#include "utils/constants.h"
 
 #include <algorithm> // std::min
 
-// --- Default map data ---
-
-/// @brief The 32×15 default level.  0=empty, 1=RED wall, 2=PINK, 3=MAROON, 4=SKY.
 // clang-format off
 static const int DEFAULT_MAP[SCENE_ROWS][SCENE_COLS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -29,14 +23,12 @@ static const int DEFAULT_MAP[SCENE_ROWS][SCENE_COLS] = {
 };
 // clang-format on
 
-// --- Scene::New ---
-
 Scene Scene::New() {
     Scene s;
     s.cols = SCENE_COLS;
     s.rows = SCENE_ROWS;
 
-    // Compute minimap cell size and gap offsets, original calculation:
+    // Compute minimap cell size and gap offsets:
     //   gab_px    = int(GAB_FACTOR * MINIMAP_W)
     //   cell_size = min((MINIMAP_W - 2*gab) / cols, (MINIMAP_H - 2*gab) / rows)
     //   h_gab     = (MINIMAP_W - cell_size * cols) / 2
@@ -47,7 +39,6 @@ Scene Scene::New() {
     s.h_gab     = (Constants::MINIMAP_W - s.cell_size * s.cols) / 2;
     s.v_gab     = (Constants::MINIMAP_H - s.cell_size * s.rows) / 2;
 
-    // Copy the static map data into the struct.
     for (int row = 0; row < SCENE_ROWS; row++) {
         for (int col = 0; col < SCENE_COLS; col++) {
             s.map[row][col] = DEFAULT_MAP[row][col];
@@ -56,8 +47,6 @@ Scene Scene::New() {
 
     return s;
 }
-
-// --- Map queries ---
 
 int Scene::cell_at(int col, int row) const {
     // Out-of-bounds treated as a wall so the DDA never escapes the map.

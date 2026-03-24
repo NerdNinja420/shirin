@@ -1,29 +1,15 @@
-/// @file render/minimap.cpp
-/// @brief Minimap overlay rendering implementation.
-
 #include "render/minimap.h"
-#include "world/color.h"
-#include "world/constants.h"
+#include "utils/color.h"
+#include "utils/constants.h"
 
-#include <cmath> // sqrtf
+#include <cmath>
 
-// --- Internal helpers ---
-
-/// @brief Draw a filled circle using horizontal scan lines.
-///        All lines are drawn with the renderer's current draw colour.
-///
-/// @param r       Renderer to draw into.
-/// @param cx      Centre x in pixels.
-/// @param cy      Centre y in pixels.
-/// @param radius  Circle radius in pixels.
 static void fill_circle(Renderer &r, float cx, float cy, float radius) {
     for (float dy = -radius; dy <= radius; dy += 1.0f) {
         float dx = sqrtf(radius * radius - dy * dy);
         r.draw_line(cx - dx, cy + dy, cx + dx, cy + dy);
     }
 }
-
-// --- Factory / lifecycle ---
 
 Minimap Minimap::New(Renderer &r) {
     Minimap mm;
@@ -35,8 +21,6 @@ void Minimap::destroy() {
     texture.destroy();
 }
 
-// --- Coordinate conversion ---
-
 Vec2 Minimap::world_to_minimap(Vec2 world_pos, const Scene &scene) const {
     Vec2 px;
     px.x = world_pos.x * (float)scene.cell_size + (float)scene.h_gab;
@@ -44,16 +28,12 @@ Vec2 Minimap::world_to_minimap(Vec2 world_pos, const Scene &scene) const {
     return px;
 }
 
-// --- Render ---
-
 void Minimap::render(const Player &player, const Scene &scene, Renderer &r) {
     r.set_target(texture);
 
-    // 1. Clear to background colour.
     r.set_color(Color::BASE);
     r.clear();
 
-    // 2. Draw grid lines.
     r.set_color(Color::RED);
 
     // Horizontal lines — one per row boundary (rows+1 lines total).
@@ -72,7 +52,6 @@ void Minimap::render(const Player &player, const Scene &scene, Renderer &r) {
         r.draw_line(x, y0, x, y1);
     }
 
-    // 3. Fill wall cells.
     r.set_color(Color::SURFACE2);
 
     for (int row = 0; row < scene.rows; row++) {
@@ -88,7 +67,6 @@ void Minimap::render(const Player &player, const Scene &scene, Renderer &r) {
         }
     }
 
-    // Compute player and FOV key points in minimap pixel space.
     Vec2 r1, r2;
     player.get_fov_range(r1, r2);
 
@@ -97,11 +75,9 @@ void Minimap::render(const Player &player, const Scene &scene, Renderer &r) {
     Vec2 px_r2         = world_to_minimap(r2, scene);
     Vec2 px_cam_center = world_to_minimap(player.camera_center(), scene);
 
-    // 4. Player dot (filled circle).
     r.set_color(Color::FLAMINGO);
     fill_circle(r, px_player.x, px_player.y, Constants::PLAYER_DOT_RADIUS);
 
-    // 5. FOV trapezoid lines (FOV trapezoid lines).
     r.set_color(Color::SKY);
 
     // Camera-plane edge to each endpoint.

@@ -1,9 +1,4 @@
-/// @file world/color.cpp
-/// @brief Color factory, Catppuccin Mocha palette definitions, and cell-to-color mapping.
-
-#include "world/color.h"
-
-// --- Color factory ---
+#include "utils/color.h"
 
 Color Color::New(uint8_t r, uint8_t g, uint8_t b) {
     Color c;
@@ -12,8 +7,6 @@ Color Color::New(uint8_t r, uint8_t g, uint8_t b) {
     c.b = b;
     return c;
 }
-
-// --- Cell-to-color mapping ---
 
 Color Color::from_cell(int cell_value) {
     switch (cell_value) {
@@ -29,8 +22,6 @@ Color Color::from_cell(int cell_value) {
             return Color::BASE;
     }
 }
-
-// --- Catppuccin Mocha palette ---
 
 const Color Color::ROSEWATER = Color::New(245, 224, 220);
 const Color Color::FLAMINGO  = Color::New(242, 205, 205);

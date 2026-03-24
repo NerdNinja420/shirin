@@ -1,11 +1,6 @@
-/// @file render/renderer.cpp
-/// @brief SDL3 implementation of the Renderer and Texture methods.
-
 #include "render/renderer.h"
 
-#include <cstdlib> // exit
-
-// --- Texture ---
+#include <cstdlib>
 
 Texture Texture::New(Renderer &r, int w, int h) {
     Texture t;
@@ -28,8 +23,6 @@ void Texture::destroy() {
     SDL_DestroyTexture(handle);
     handle = nullptr;
 }
-
-// --- Renderer ---
 
 void Renderer::set_color(Color c) {
     SDL_SetRenderDrawColor(handle, c.r, c.g, c.b, 255);
