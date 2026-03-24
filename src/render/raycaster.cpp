@@ -2,7 +2,6 @@
 #include "objects/player.h"
 #include "utils/constants.h"
 
-#include <algorithm>
 #include <cmath>
 
 Raycaster Raycaster::New() {
@@ -30,16 +29,16 @@ float Raycaster::snap(float p, float delta) const {
 Vec2 Raycaster::ray_step(Vec2 p1, Vec2 p2) const {
     Vec2 d = p2 - p1;
 
-    float tx = delta_t(p2.x, d.x);
-    float ty = delta_t(p2.y, d.y);
+    float tx = this->delta_t(p2.x, d.x);
+    float ty = this->delta_t(p2.y, d.y);
 
     Vec2 next;
     if (tx < ty) {
-        next.x = snap(p2.x, d.x);
+        next.x = this->snap(p2.x, d.x);
         next.y = p2.y + d.y * tx;
     } else {
         next.x = p2.x + d.x * ty;
-        next.y = snap(p2.y, d.y);
+        next.y = this->snap(p2.y, d.y);
     }
 
     return next;
@@ -47,8 +46,8 @@ Vec2 Raycaster::ray_step(Vec2 p1, Vec2 p2) const {
 
 bool Raycaster::cast_ray(Vec2 p1, Vec2 p2, const Scene &scene, Vec2 &hit) const {
     Vec2 ray_dir = p2 - p1;
-    Vec2 prev    = p1 - ray_dir;
-    Vec2 curr    = ray_step(prev, p1);
+    Vec2 prev = p1 - ray_dir;
+    Vec2 curr = this->ray_step(prev, p1);
 
     while (scene.in_bounds((int)curr.x, (int)curr.y)) {
         int cell_col = (int)floorf(curr.x);
@@ -59,7 +58,7 @@ bool Raycaster::cast_ray(Vec2 p1, Vec2 p2, const Scene &scene, Vec2 &hit) const 
             return true;
         }
 
-        Vec2 next = ray_step(prev, curr);
+        Vec2 next = this->ray_step(prev, curr);
         prev = curr;
         curr = next;
     }
@@ -91,28 +90,28 @@ void Raycaster::render(const Scene &scene, Renderer &r) {
     Vec2 r1, r2;
     player.get_fov_range(r1, r2);
 
-    Vec2  dir     = player.direction_vec();
+    Vec2 dir = player.direction_vec();
     float strip_w = (float)Constants::WIN_WIDTH / (float)Constants::RES;
 
     for (int x = 0; x < Constants::RES; x++) {
-        float t         = (float)x / (float)Constants::RES;
-        Vec2  cam_point = r1 + (r2 - r1) * t;
+        float t = (float)x / (float)Constants::RES;
+        Vec2 cam_point = r1 + (r2 - r1) * t;
 
         Vec2 hit;
-        if (!cast_ray(player.position, cam_point, scene, hit)) continue;
+        if (!this->cast_ray(player.position, cam_point, scene, hit)) continue;
 
-        Vec2  hit_vec   = hit - player.position;
+        Vec2 hit_vec = hit - player.position;
         float perp_dist = dir.dot(hit_vec);
 
         if (perp_dist <= 0.0f) continue;
 
-        float height  = (float)Constants::WIN_HEIGHT / perp_dist;
-        float y_top   = ((float)Constants::WIN_HEIGHT - height) * 0.5f;
+        float height = (float)Constants::WIN_HEIGHT / perp_dist;
+        float y_top = ((float)Constants::WIN_HEIGHT - height) * 0.5f;
         float y_bottom = ((float)Constants::WIN_HEIGHT + height) * 0.5f;
 
-        int   cell_col = (int)floorf(hit.x);
-        int   cell_row = (int)floorf(hit.y);
-        Color color    = apply_fog(Color::from_cell(scene.cell_at(cell_col, cell_row)), perp_dist);
+        int cell_col = (int)floorf(hit.x);
+        int cell_row = (int)floorf(hit.y);
+        Color color = apply_fog(Color::from_cell(scene.cell_at(cell_col, cell_row)), perp_dist);
 
         r.set_color(color);
         r.fill_rect((float)x * strip_w, y_top, strip_w + 1.0f, y_bottom - y_top);

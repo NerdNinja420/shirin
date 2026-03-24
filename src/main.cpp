@@ -5,15 +5,17 @@
 
 int main(void) {
     Player player = Player::New(Vec2::New(7.5f, 5.5f), 3.14159265f * 1.25f);
-    Scene  scene  = Scene::New();
+    Scene scene = Scene::New();
 
     Game game = Game::New("Shirin — C++ / SDL3 raycaster",
-                          Constants::WIN_WIDTH, Constants::WIN_HEIGHT,
-                          player, scene);
+                          Constants::WIN_WIDTH,
+                          Constants::WIN_HEIGHT,
+                          player,
+                          scene);
 
     while (true) {
-        uint64_t t0    = game.begin_frame();
-        Input    input = game.poll_events();
+        uint64_t t0 = game.begin_frame();
+        Input input = game.poll_events();
         if (input.quit) break;
 
         game.handle_input(input);

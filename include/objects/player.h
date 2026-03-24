@@ -2,9 +2,6 @@
 #define PLAYER_H_
 
 #include "math/vec2.h"
-#include "utils/input.h"
-
-struct Scene; // forward declaration — scene.h forward-declares Player symmetrically
 
 struct Player {
     Vec2 position;
@@ -17,11 +14,6 @@ struct Player {
     // perp = (p - position).rot90()  // unit since CAMERA_PLANE_DIST == 1
     // r1 = p - perp,  r2 = p + perp  → 90° FOV (tan 45° = 1)
     void get_fov_range(Vec2 &r1, Vec2 &r2) const;
-
-    // Tries delta; if blocked, retries X-only then Y-only (wall sliding).
-    void try_move(Vec2 delta, const Scene &scene);
-    // Mouse rotation applied by caller; applies WASD movement with collision.
-    bool handle_input(const Scene &scene, const Input &input);
 };
 
 #endif

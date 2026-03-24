@@ -28,34 +28,67 @@ Game Game::New(const char *title, int width, int height, Player player, Scene sc
     SDL_SetWindowRelativeMouseMode(win, true);
 
     Game g;
-    g.window       = win;
-    g.player       = player;
-    g.scene        = scene;
+    g.window = win;
+    g.player = player;
+    g.scene = scene;
     g.scene.player = &g.player;
-    g.raycaster    = Raycaster::New();
-    g.renderer     = Renderer::New(rend, width, height);
+    g.raycaster = Raycaster::New();
+    g.renderer = Renderer::New(rend, width, height);
     return g;
 }
 
 void Game::destroy() {
-    renderer.destroy();
-    SDL_DestroyWindow(window);
+    this->renderer.destroy();
+    SDL_DestroyWindow(this->window);
     SDL_Quit();
-    window = nullptr;
+    this->window = nullptr;
 }
 
 uint64_t Game::begin_frame() {
     return SDL_GetTicks();
 }
 
+void Game::try_move(Vec2 delta) {
+    float m = Constants::COLLISION_MARGIN;
+
+    auto blocked = [&](Vec2 pos) -> bool {
+        return this->scene.is_wall((int)(pos.x + m), (int)(pos.y + m)) ||
+               this->scene.is_wall((int)(pos.x - m), (int)(pos.y + m)) ||
+               this->scene.is_wall((int)(pos.x + m), (int)(pos.y - m)) ||
+               this->scene.is_wall((int)(pos.x - m), (int)(pos.y - m));
+    };
+
+    Vec2 next = this->player.position + delta;
+    if (!blocked(next)) {
+        this->player.position = next;
+        return;
+    }
+
+    Vec2 next_x = {this->player.position.x + delta.x, this->player.position.y};
+    if (!blocked(next_x)) {
+        this->player.position = next_x;
+        return;
+    }
+
+    Vec2 next_y = {this->player.position.x, this->player.position.y + delta.y};
+    if (!blocked(next_y)) {
+        this->player.position = next_y;
+    }
+}
+
 void Game::handle_input(const Input &input) {
-    player.direction += input.mouse_dx * Constants::MOUSE_SENSITIVITY;
-    player.handle_input(scene, input);
+    this->player.direction += input.mouse_dx * Constants::MOUSE_SENSITIVITY;
+    if (input.forward) this->try_move(this->player.direction_vec() * Constants::MOVE_STEP);
+    if (input.backward) this->try_move(this->player.direction_vec() * -Constants::MOVE_STEP);
+    if (input.strafe_left)
+        this->try_move(-this->player.direction_vec().rot90() * Constants::MOVE_STEP);
+    if (input.strafe_right)
+        this->try_move(this->player.direction_vec().rot90() * Constants::MOVE_STEP);
 }
 
 void Game::end_frame(uint64_t frame_start_ticks) {
     uint64_t frame_ms = 1000 / Constants::FPS;
-    uint64_t elapsed  = SDL_GetTicks() - frame_start_ticks;
+    uint64_t elapsed = SDL_GetTicks() - frame_start_ticks;
     if (elapsed < frame_ms) {
         SDL_Delay((uint32_t)(frame_ms - elapsed));
     }
@@ -63,12 +96,12 @@ void Game::end_frame(uint64_t frame_start_ticks) {
 
 Input Game::poll_events() {
     Input input;
-    input.forward      = false;
-    input.backward     = false;
-    input.strafe_left  = false;
+    input.forward = false;
+    input.backward = false;
+    input.strafe_left = false;
     input.strafe_right = false;
-    input.mouse_dx     = 0.0f;
-    input.quit         = false;
+    input.mouse_dx = 0.0f;
+    input.quit = false;
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -83,10 +116,10 @@ Input Game::poll_events() {
         }
     }
 
-    const bool *keys   = SDL_GetKeyboardState(nullptr);
-    input.forward      = keys[SDL_SCANCODE_W];
-    input.backward     = keys[SDL_SCANCODE_S];
-    input.strafe_left  = keys[SDL_SCANCODE_A];
+    const bool *keys = SDL_GetKeyboardState(nullptr);
+    input.forward = keys[SDL_SCANCODE_W];
+    input.backward = keys[SDL_SCANCODE_S];
+    input.strafe_left = keys[SDL_SCANCODE_A];
     input.strafe_right = keys[SDL_SCANCODE_D];
 
     return input;
