@@ -1,4 +1,5 @@
 #include "render/renderer.h"
+#include "utils/logger.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,7 +14,7 @@ Renderer Renderer::New(SDL_Window *win, int w, int h) {
 
     r.sdl_renderer = SDL_CreateRenderer(win, nullptr);
     if (!r.sdl_renderer) {
-        SDL_Log("Renderer::New: SDL_CreateRenderer failed: %s", SDL_GetError());
+        logger::error("Renderer::New: SDL_CreateRenderer failed: %s", SDL_GetError());
         SDL_Quit();
         exit(1);
     }
@@ -24,7 +25,7 @@ Renderer Renderer::New(SDL_Window *win, int w, int h) {
                                      w,
                                      h);
     if (!r.upload_tex) {
-        SDL_Log("Renderer::New: SDL_CreateTexture failed: %s", SDL_GetError());
+        logger::error("Renderer::New: SDL_CreateTexture failed: %s", SDL_GetError());
         SDL_DestroyRenderer(r.sdl_renderer);
         SDL_Quit();
         exit(1);
