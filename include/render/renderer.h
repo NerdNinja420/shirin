@@ -13,7 +13,7 @@ struct Renderer {
     SDL_Texture *upload_tex; // STREAMING texture used only inside present()
     uint32_t draw_color;     // packed ARGB8888, written by set_color()
 
-    static Renderer New(SDL_Renderer *sdl_r, int w, int h);
+    static Renderer New(SDL_Window *win, int w, int h);
     void destroy();
 
     void set_color(Color c);

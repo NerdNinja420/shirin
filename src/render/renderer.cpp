@@ -4,18 +4,28 @@
 #include <cmath>
 #include <cstdlib>
 
-Renderer Renderer::New(SDL_Renderer *sdl_r, int w, int h) {
+Renderer Renderer::New(SDL_Window *win, int w, int h) {
     Renderer r;
-    r.sdl_renderer = sdl_r;
     r.width = w;
     r.height = h;
     r.draw_color = 0xFF000000u;
     r.pixels = new uint32_t[w * h];
 
-    r.upload_tex =
-        SDL_CreateTexture(sdl_r, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, w, h);
+    r.sdl_renderer = SDL_CreateRenderer(win, nullptr);
+    if (!r.sdl_renderer) {
+        SDL_Log("Renderer::New: SDL_CreateRenderer failed: %s", SDL_GetError());
+        SDL_Quit();
+        exit(1);
+    }
+
+    r.upload_tex = SDL_CreateTexture(r.sdl_renderer,
+                                     SDL_PIXELFORMAT_ARGB8888,
+                                     SDL_TEXTUREACCESS_STREAMING,
+                                     w,
+                                     h);
     if (!r.upload_tex) {
         SDL_Log("Renderer::New: SDL_CreateTexture failed: %s", SDL_GetError());
+        SDL_DestroyRenderer(r.sdl_renderer);
         SDL_Quit();
         exit(1);
     }

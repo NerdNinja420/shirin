@@ -5,7 +5,11 @@
 #include <cstdio>
 #include <cstdlib>
 
-Game Game::New(const char *title, int width, int height, Player player) {
+Game Game::New(const char *title,
+               int width,
+               int height,
+               Player player,
+               std::initializer_list<Scene> scenes) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         exit(1);
@@ -18,35 +22,16 @@ Game Game::New(const char *title, int width, int height, Player player) {
         exit(1);
     }
 
-    SDL_Renderer *rend = SDL_CreateRenderer(win, nullptr);
-    if (!rend) {
-        fprintf(stderr, "SDL_CreateRenderer failed: %s\n", SDL_GetError());
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        exit(1);
-    }
-
     SDL_SetWindowRelativeMouseMode(win, true);
 
     Game g;
     g.window = win;
     g.active = 0;
-    g.scenes[0] = Scene::New((const int *)SceneData::A,
-                             SceneData::A_COLS,
-                             SceneData::A_ROWS,
-                             Vec2::New(7.5f, 5.5f));
-    g.scenes[1] = Scene::New((const int *)SceneData::B,
-                             SceneData::B_COLS,
-                             SceneData::B_ROWS,
-                             Vec2::New(2.5f, 2.5f));
-    g.scenes[2] = Scene::New((const int *)SceneData::C,
-                             SceneData::C_COLS,
-                             SceneData::C_ROWS,
-                             Vec2::New(2.5f, 2.5f));
+    g.scenes = scenes;
     g.player = player;
-    g.scenes[0].enter(g.player); // set position to scene A spawn
+    g.scenes[0].enter(g.player);
     g.raycaster = Raycaster::New();
-    g.renderer = Renderer::New(rend, width, height);
+    g.renderer = Renderer::New(win, width, height);
     return g;
 }
 
@@ -93,7 +78,7 @@ void Game::check_portal() {
     int col = (int)floorf(this->player.position.x);
     int row = (int)floorf(this->player.position.y);
     if (this->current_scene().cell_at(col, row) == 5) {
-        this->active = (this->active + 1) % 3;
+        this->active = (this->active + 1) % (int)this->scenes.size();
         this->current_scene().enter(this->player);
     }
 }
