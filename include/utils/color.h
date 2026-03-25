@@ -27,6 +27,7 @@ class Color {
     static const Color BASE;
     static const Color MANTLE;
     static const Color CRUST;
+    static const Color PEACH; // portal cells on the minimap
 };
 
 #endif
