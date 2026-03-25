@@ -2,7 +2,6 @@
 #define GAME_H_
 
 #include <SDL3/SDL.h>
-#include <cstdint>
 #include <vector>
 
 #include "objects/player.h"
@@ -32,13 +31,9 @@ struct Game {
     New(const char *title, int width, int height, Player player, std::vector<Scene> scenes);
     void destroy();
 
-    // Returns the tick count to pass to end_frame().
-    uint64_t begin_frame();
     Input poll_events();
     // Applies mouse rotation, WASD movement, then checks for portal transition.
-    void handle_input(const Input &input);
-    // Sleeps for the remainder of the frame budget. Does NOT call present().
-    void end_frame(uint64_t frame_start_ticks);
+    void handle_input(const Input &input, float dt);
 
   private:
     // Tries delta; if blocked, retries X-only then Y-only (wall sliding).

@@ -18,6 +18,8 @@ struct Renderer {
 
     void set_color(Color c);
     void clear();
+    void draw_line(float x0, float y0, float x1, float y1);
+    void draw_rect(float x, float y, float w, float h); // outline
     void fill_rect(float x, float y, float w, float h);
     // Wall strip with sub-pixel edge blending against ceiling and floor colors.
     void fill_column_aa(float x,
@@ -27,8 +29,6 @@ struct Renderer {
                         Color wall,
                         Color ceiling,
                         Color floor);
-    void draw_rect(float x, float y, float w, float h); // outline
-    void draw_line(float x0, float y0, float x1, float y1);
     void draw_circle(float cx, float cy, float radius); // outline
     void fill_circle(float cx, float cy, float radius); // filled
     // Upload pixels to SDL, blit to window, flip.

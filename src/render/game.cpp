@@ -1,19 +1,19 @@
 #include "render/game.h"
 #include "utils/constants.h"
+#include "utils/logger.h"
 
 #include <cmath>
-#include <cstdio>
 #include <cstdlib>
 
 Game Game::New(const char *title, int width, int height, Player player, std::vector<Scene> scenes) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
+        logger::error("SDL_Init failed: %s", SDL_GetError());
         exit(1);
     }
 
     SDL_Window *win = SDL_CreateWindow(title, width, height, 0);
     if (!win) {
-        fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
+        logger::error("SDL_CreateWindow failed: %s", SDL_GetError());
         SDL_Quit();
         exit(1);
     }
@@ -36,10 +36,6 @@ void Game::destroy() {
     SDL_DestroyWindow(this->window);
     SDL_Quit();
     this->window = nullptr;
-}
-
-uint64_t Game::begin_frame() {
-    return SDL_GetTicks();
 }
 
 void Game::try_move(Vec2 delta) {
@@ -79,23 +75,15 @@ void Game::check_portal() {
     }
 }
 
-void Game::handle_input(const Input &input) {
+void Game::handle_input(const Input &input, float dt) {
     this->player.direction += input.mouse_dx * Constants::MOUSE_SENSITIVITY;
-    if (input.forward) this->try_move(this->player.direction_vec() * Constants::MOVE_STEP);
-    if (input.backward) this->try_move(this->player.direction_vec() * -Constants::MOVE_STEP);
+    if (input.forward) this->try_move(this->player.direction_vec() * Constants::MOVE_SPEED * dt);
+    if (input.backward) this->try_move(this->player.direction_vec() * -Constants::MOVE_SPEED * dt);
     if (input.strafe_left)
-        this->try_move(-this->player.direction_vec().rot90() * Constants::MOVE_STEP);
+        this->try_move(-this->player.direction_vec().rot90() * Constants::MOVE_SPEED * dt);
     if (input.strafe_right)
-        this->try_move(this->player.direction_vec().rot90() * Constants::MOVE_STEP);
+        this->try_move(this->player.direction_vec().rot90() * Constants::MOVE_SPEED * dt);
     this->check_portal();
-}
-
-void Game::end_frame(uint64_t frame_start_ticks) {
-    uint64_t frame_ms = 1000 / Constants::FPS;
-    uint64_t elapsed = SDL_GetTicks() - frame_start_ticks;
-    if (elapsed < frame_ms) {
-        SDL_Delay((uint32_t)(frame_ms - elapsed));
-    }
 }
 
 Input Game::poll_events() {
