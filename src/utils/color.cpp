@@ -18,6 +18,8 @@ Color Color::from_cell(int cell_value) {
             return Color::MAROON;
         case 4:
             return Color::SKY;
+        case 5:
+            return Color::PEACH;
         default:
             return Color::BASE;
     }
@@ -36,3 +38,4 @@ const Color Color::SURFACE0 = Color::New(49, 50, 68);
 const Color Color::BASE = Color::New(30, 30, 46);
 const Color Color::MANTLE = Color::New(24, 24, 37);
 const Color Color::CRUST = Color::New(17, 17, 27);
+const Color Color::PEACH = Color::New(250, 179, 135);

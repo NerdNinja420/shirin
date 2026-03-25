@@ -1,10 +1,11 @@
 #include "render/game.h"
 #include "utils/constants.h"
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 
-Game Game::New(const char *title, int width, int height, Player player, Scene scene) {
+Game Game::New(const char *title, int width, int height, Player player) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         exit(1);
@@ -29,9 +30,21 @@ Game Game::New(const char *title, int width, int height, Player player, Scene sc
 
     Game g;
     g.window = win;
+    g.active = 0;
+    g.scenes[0] = Scene::New((const int *)SceneData::A,
+                             SceneData::A_COLS,
+                             SceneData::A_ROWS,
+                             Vec2::New(7.5f, 5.5f));
+    g.scenes[1] = Scene::New((const int *)SceneData::B,
+                             SceneData::B_COLS,
+                             SceneData::B_ROWS,
+                             Vec2::New(2.5f, 2.5f));
+    g.scenes[2] = Scene::New((const int *)SceneData::C,
+                             SceneData::C_COLS,
+                             SceneData::C_ROWS,
+                             Vec2::New(2.5f, 2.5f));
     g.player = player;
-    g.scene = scene;
-    g.scene.player = &g.player;
+    g.scenes[0].enter(g.player); // set position to scene A spawn
     g.raycaster = Raycaster::New();
     g.renderer = Renderer::New(rend, width, height);
     return g;
@@ -52,10 +65,10 @@ void Game::try_move(Vec2 delta) {
     float m = Constants::COLLISION_MARGIN;
 
     auto blocked = [&](Vec2 pos) -> bool {
-        return this->scene.is_wall((int)(pos.x + m), (int)(pos.y + m)) ||
-               this->scene.is_wall((int)(pos.x - m), (int)(pos.y + m)) ||
-               this->scene.is_wall((int)(pos.x + m), (int)(pos.y - m)) ||
-               this->scene.is_wall((int)(pos.x - m), (int)(pos.y - m));
+        return this->current_scene().is_wall((int)(pos.x + m), (int)(pos.y + m)) ||
+               this->current_scene().is_wall((int)(pos.x - m), (int)(pos.y + m)) ||
+               this->current_scene().is_wall((int)(pos.x + m), (int)(pos.y - m)) ||
+               this->current_scene().is_wall((int)(pos.x - m), (int)(pos.y - m));
     };
 
     Vec2 next = this->player.position + delta;
@@ -76,6 +89,15 @@ void Game::try_move(Vec2 delta) {
     }
 }
 
+void Game::check_portal() {
+    int col = (int)floorf(this->player.position.x);
+    int row = (int)floorf(this->player.position.y);
+    if (this->current_scene().cell_at(col, row) == 5) {
+        this->active = (this->active + 1) % 3;
+        this->current_scene().enter(this->player);
+    }
+}
+
 void Game::handle_input(const Input &input) {
     this->player.direction += input.mouse_dx * Constants::MOUSE_SENSITIVITY;
     if (input.forward) this->try_move(this->player.direction_vec() * Constants::MOVE_STEP);
@@ -84,6 +106,7 @@ void Game::handle_input(const Input &input) {
         this->try_move(-this->player.direction_vec().rot90() * Constants::MOVE_STEP);
     if (input.strafe_right)
         this->try_move(this->player.direction_vec().rot90() * Constants::MOVE_STEP);
+    this->check_portal();
 }
 
 void Game::end_frame(uint64_t frame_start_ticks) {

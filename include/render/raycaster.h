@@ -7,7 +7,7 @@
 
 struct Raycaster {
     static Raycaster New();
-    void render(const Scene &scene, Renderer &r);
+    void render(const Scene &scene, const Player &player, Renderer &r);
 
   private:
     // Returns INFINITY_VAL if dp == 0 (ray parallel to axis).

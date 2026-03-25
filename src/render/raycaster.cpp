@@ -53,7 +53,7 @@ bool Raycaster::cast_ray(Vec2 p1, Vec2 p2, const Scene &scene, Vec2 &hit) const 
         int cell_col = (int)floorf(curr.x);
         int cell_row = (int)floorf(curr.y);
 
-        if (scene.cell_at(cell_col, cell_row) >= 1) {
+        if (scene.cell_at(cell_col, cell_row) >= 1 && scene.cell_at(cell_col, cell_row) != 5) {
             hit = curr;
             return true;
         }
@@ -75,9 +75,7 @@ static Color apply_fog(Color c, float perp_dist) {
                       (uint8_t)((float)c.b * (1.0f - t) + (float)fog.b * t));
 }
 
-void Raycaster::render(const Scene &scene, Renderer &r) {
-    const Player &player = *scene.player;
-
+void Raycaster::render(const Scene &scene, const Player &player, Renderer &r) {
     r.set_color(Color::MANTLE);
     r.fill_rect(0.0f, 0.0f, (float)Constants::WIN_WIDTH, (float)Constants::WIN_HEIGHT * 0.5f);
 

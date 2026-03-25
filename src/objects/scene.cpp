@@ -5,26 +5,6 @@
 
 #include <algorithm>
 
-// clang-format off
-static const int DEFAULT_MAP[SCENE_ROWS][SCENE_COLS] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 0, 0, 4, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 3, 0, 0, 3, 0, 0, 4, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 3, 0, 0, 3, 0, 0, 4, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 1, 2, 2, 0, 2, 2, 1},
-    {1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 2, 0, 2, 2, 2, 0, 0, 3, 0, 0, 3, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 4, 0, 0, 3, 3, 3, 3, 0, 0, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 4, 0, 0, 3, 0, 3, 3, 3, 2, 2, 2, 0, 4, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 4, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 3, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
-// clang-format on
-
 static Vec2 world_to_minimap(Vec2 world_pos, int cell_size, int h_gab, int v_gab) {
     Vec2 px;
     px.x = world_pos.x * (float)cell_size + (float)h_gab;
@@ -32,30 +12,25 @@ static Vec2 world_to_minimap(Vec2 world_pos, int cell_size, int h_gab, int v_gab
     return px;
 }
 
-Scene Scene::New() {
+Scene Scene::New(const int *map, int cols, int rows, Vec2 spawn) {
     Scene s;
-    s.cols = SCENE_COLS;
-    s.rows = SCENE_ROWS;
-
-    for (int row = 0; row < SCENE_ROWS; row++) {
-        for (int col = 0; col < SCENE_COLS; col++) {
-            s.map[row][col] = DEFAULT_MAP[row][col];
-        }
-    }
+    s.map = map;
+    s.cols = cols;
+    s.rows = rows;
+    s.spawn = spawn;
 
     int gab_px = (int)(Constants::GAB_FACTOR * Constants::MINIMAP_W);
-    s.cell_size = std::min((Constants::MINIMAP_W - 2 * gab_px) / s.cols,
-                           (Constants::MINIMAP_H - 2 * gab_px) / s.rows);
-    s.h_gab = (Constants::MINIMAP_W - s.cell_size * s.cols) / 2;
-    s.v_gab = (Constants::MINIMAP_H - s.cell_size * s.rows) / 2;
-    s.player = nullptr;
+    s.cell_size = std::min((Constants::MINIMAP_W - 2 * gab_px) / cols,
+                           (Constants::MINIMAP_H - 2 * gab_px) / rows);
+    s.h_gab = (Constants::MINIMAP_W - s.cell_size * cols) / 2;
+    s.v_gab = (Constants::MINIMAP_H - s.cell_size * rows) / 2;
 
     return s;
 }
 
 int Scene::cell_at(int col, int row) const {
     if (!this->in_bounds(col, row)) return 1;
-    return this->map[row][col];
+    return this->map[row * this->cols + col];
 }
 
 bool Scene::in_bounds(int col, int row) const {
@@ -63,10 +38,15 @@ bool Scene::in_bounds(int col, int row) const {
 }
 
 bool Scene::is_wall(int col, int row) const {
-    return this->cell_at(col, row) >= 1;
+    int c = this->cell_at(col, row);
+    return c >= 1 && c != 5;
 }
 
-void Scene::render_minimap(Renderer &r) const {
+void Scene::enter(Player &player) const {
+    player.position = this->spawn;
+}
+
+void Scene::render_minimap(Renderer &r, const Player &player) const {
     r.set_color(Color::BASE);
     r.fill_rect(0.0f, 0.0f, (float)Constants::MINIMAP_W, (float)Constants::MINIMAP_H);
 
@@ -86,29 +66,33 @@ void Scene::render_minimap(Renderer &r) const {
         r.draw_line(x, y0, x, y1);
     }
 
-    r.set_color(Color::SURFACE2);
-
     for (int row = 0; row < this->rows; row++) {
         for (int col = 0; col < this->cols; col++) {
-            if (this->map[row][col] >= 1) {
-                float cx = (float)(col * this->cell_size + this->h_gab + 1);
-                float cy = (float)(row * this->cell_size + this->v_gab + 1);
-                float cw = (float)(this->cell_size - 1);
-                float ch = (float)(this->cell_size - 1);
-                r.fill_rect(cx, cy, cw, ch);
+            int cell = this->map[row * this->cols + col];
+            if (cell == 5) {
+                r.set_color(Color::PEACH);
+                r.fill_rect((float)(col * this->cell_size + this->h_gab + 1),
+                            (float)(row * this->cell_size + this->v_gab + 1),
+                            (float)(this->cell_size - 1),
+                            (float)(this->cell_size - 1));
+            } else if (cell >= 1) {
+                r.set_color(Color::SURFACE2);
+                r.fill_rect((float)(col * this->cell_size + this->h_gab + 1),
+                            (float)(row * this->cell_size + this->v_gab + 1),
+                            (float)(this->cell_size - 1),
+                            (float)(this->cell_size - 1));
             }
         }
     }
 
     Vec2 r1, r2;
-    this->player->get_fov_range(r1, r2);
+    player.get_fov_range(r1, r2);
 
-    Vec2 px_player =
-        world_to_minimap(this->player->position, this->cell_size, this->h_gab, this->v_gab);
+    Vec2 px_player = world_to_minimap(player.position, this->cell_size, this->h_gab, this->v_gab);
     Vec2 px_r1 = world_to_minimap(r1, this->cell_size, this->h_gab, this->v_gab);
     Vec2 px_r2 = world_to_minimap(r2, this->cell_size, this->h_gab, this->v_gab);
     Vec2 px_cam_center =
-        world_to_minimap(this->player->camera_center(), this->cell_size, this->h_gab, this->v_gab);
+        world_to_minimap(player.camera_center(), this->cell_size, this->h_gab, this->v_gab);
 
     r.set_color(Color::FLAMINGO);
     r.fill_circle(px_player.x, px_player.y, Constants::PLAYER_DOT_RADIUS);
