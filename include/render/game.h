@@ -3,7 +3,6 @@
 
 #include <SDL3/SDL.h>
 #include <cstdint>
-#include <initializer_list>
 #include <vector>
 
 #include "objects/player.h"
@@ -29,11 +28,8 @@ struct Game {
 
     // Calls exit(1) on any initialisation failure.
     // scenes[0].enter() sets player position to the first scene's spawn.
-    static Game New(const char *title,
-                    int width,
-                    int height,
-                    Player player,
-                    std::initializer_list<Scene> scenes);
+    static Game
+    New(const char *title, int width, int height, Player player, std::vector<Scene> scenes);
     void destroy();
 
     // Returns the tick count to pass to end_frame().
