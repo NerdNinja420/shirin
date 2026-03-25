@@ -13,6 +13,8 @@ class Color {
 
     // Maps cell value to wall color: 1→RED, 2→PINK, 3→MAROON, 4→SKY, else→BASE.
     static Color from_cell(int cell_value);
+    // Returns a new Color with each channel halved (NS wall face darkening).
+    Color half() const;
 
     static const Color ROSEWATER;
     static const Color FLAMINGO;
