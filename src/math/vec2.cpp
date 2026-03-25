@@ -2,13 +2,6 @@
 
 #include <cmath>
 
-Vec2 Vec2::New(float x, float y) {
-    Vec2 v;
-    v.x = x;
-    v.y = y;
-    return v;
-}
-
 Vec2 Vec2::from_angle(float angle) {
     Vec2 v;
     v.x = cosf(angle);

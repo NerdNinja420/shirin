@@ -5,7 +5,12 @@ struct Vec2 {
     float x;
     float y;
 
-    static Vec2 New(float x, float y);
+    static constexpr Vec2 New(float x, float y) {
+        Vec2 v;
+        v.x = x;
+        v.y = y;
+        return v;
+    }
     static Vec2 from_angle(float angle); // Returns (cos(angle), sin(angle)).
     static Vec2 zero();
 

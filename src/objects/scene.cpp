@@ -1,31 +1,12 @@
 #include "objects/scene.h"
 #include "objects/player.h"
 #include "render/renderer.h"
-#include "utils/constants.h"
-
-#include <algorithm>
 
 static Vec2 world_to_minimap(Vec2 world_pos, int cell_size, int h_gab, int v_gab) {
     Vec2 px;
     px.x = world_pos.x * (float)cell_size + (float)h_gab;
     px.y = world_pos.y * (float)cell_size + (float)v_gab;
     return px;
-}
-
-Scene Scene::New(const int *map, int cols, int rows, Vec2 spawn) {
-    Scene s;
-    s.map = map;
-    s.cols = cols;
-    s.rows = rows;
-    s.spawn = spawn;
-
-    int gab_px = (int)(Constants::GAB_FACTOR * Constants::MINIMAP_W);
-    s.cell_size = std::min((Constants::MINIMAP_W - 2 * gab_px) / cols,
-                           (Constants::MINIMAP_H - 2 * gab_px) / rows);
-    s.h_gab = (Constants::MINIMAP_W - s.cell_size * cols) / 2;
-    s.v_gab = (Constants::MINIMAP_H - s.cell_size * rows) / 2;
-
-    return s;
 }
 
 int Scene::cell_at(int col, int row) const {
