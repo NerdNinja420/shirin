@@ -3,6 +3,8 @@
 
 #include <SDL3/SDL.h>
 #include <cstdint>
+#include <initializer_list>
+#include <vector>
 
 #include "objects/player.h"
 #include "objects/scene.h"
@@ -15,7 +17,7 @@ struct Game {
     Renderer renderer;
     Player player;
     Raycaster raycaster;
-    Scene scenes[3];
+    std::vector<Scene> scenes;
     int active; // index of the current scene
 
     Scene &current_scene() {
@@ -25,10 +27,13 @@ struct Game {
         return this->scenes[this->active];
     }
 
-    // Calls exit(1) on any initialisation failure. Scenes are built from the
-    // inline SceneData maps; player direction is taken from the player param
-    // but position is set by scenes[0].enter().
-    static Game New(const char *title, int width, int height, Player player);
+    // Calls exit(1) on any initialisation failure.
+    // scenes[0].enter() sets player position to the first scene's spawn.
+    static Game New(const char *title,
+                    int width,
+                    int height,
+                    Player player,
+                    std::initializer_list<Scene> scenes);
     void destroy();
 
     // Returns the tick count to pass to end_frame().
