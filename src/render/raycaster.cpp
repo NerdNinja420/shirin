@@ -116,7 +116,12 @@ void Raycaster::render(const Scene &scene, const Player &player, Renderer &r) {
         if (!ew_hit) base = base.half();
         Color color = apply_fog(base, perp_dist);
 
-        r.set_color(color);
-        r.fill_rect((float)x * strip_w, y_top, strip_w + 1.0f, y_bottom - y_top);
+        r.fill_column_aa((float)x * strip_w,
+                         strip_w + 1.0f,
+                         y_top,
+                         y_bottom,
+                         color,
+                         Color::MANTLE,
+                         Color::SURFACE0);
     }
 }

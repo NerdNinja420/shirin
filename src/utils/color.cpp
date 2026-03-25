@@ -29,6 +29,12 @@ Color Color::half() const {
     return Color::New(this->r >> 1, this->g >> 1, this->b >> 1);
 }
 
+Color Color::lerp(Color other, float t) const {
+    return Color::New((uint8_t)((float)this->r * (1.0f - t) + (float)other.r * t),
+                      (uint8_t)((float)this->g * (1.0f - t) + (float)other.g * t),
+                      (uint8_t)((float)this->b * (1.0f - t) + (float)other.b * t));
+}
+
 const Color Color::ROSEWATER = Color::New(245, 224, 220);
 const Color Color::FLAMINGO = Color::New(242, 205, 205);
 const Color Color::PINK = Color::New(245, 194, 231);

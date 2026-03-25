@@ -15,6 +15,8 @@ class Color {
     static Color from_cell(int cell_value);
     // Returns a new Color with each channel halved (NS wall face darkening).
     Color half() const;
+    // Linear interpolate toward other: t=0 → this, t=1 → other.
+    Color lerp(Color other, float t) const;
 
     static const Color ROSEWATER;
     static const Color FLAMINGO;
