@@ -5,11 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-Game Game::New(const char *title,
-               int width,
-               int height,
-               Player player,
-               std::initializer_list<Scene> scenes) {
+Game Game::New(const char *title, int width, int height, Player player, std::vector<Scene> scenes) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         exit(1);
