@@ -42,8 +42,12 @@ void Renderer::destroy() {
     this->sdl_renderer = nullptr;
 }
 
+static uint32_t pack(Color c) {
+    return (0xFFu << 24) | ((uint32_t)c.r << 16) | ((uint32_t)c.g << 8) | c.b;
+}
+
 void Renderer::set_color(Color c) {
-    this->draw_color = (0xFFu << 24) | ((uint32_t)c.r << 16) | ((uint32_t)c.g << 8) | c.b;
+    this->draw_color = pack(c);
 }
 
 void Renderer::clear() {
@@ -66,6 +70,34 @@ void Renderer::fill_rect(float x, float y, float w, float h) {
         for (int col = x0; col < x1; col++) {
             this->pixels[row * this->width + col] = this->draw_color;
         }
+    }
+}
+
+void Renderer::fill_column_aa(float x,
+                              float w,
+                              float y_top,
+                              float y_bottom,
+                              Color wall,
+                              Color ceiling,
+                              Color floor) {
+    int x0 = (int)x;
+    int x1 = std::min((int)(x + w) + 1, this->width);
+    int top_solid = (int)ceilf(y_top);
+    int bot_solid = (int)floorf(y_bottom);
+
+    float top_frac = (float)top_solid - y_top;    // wall coverage in top blend pixel
+    float bot_frac = y_bottom - floorf(y_bottom); // wall coverage in bot blend pixel
+    uint32_t top_px = pack(ceiling.lerp(wall, top_frac));
+    uint32_t wall_px = pack(wall);
+    uint32_t bot_px = pack(wall.lerp(floor, 1.0f - bot_frac));
+
+    for (int col = x0; col < x1; col++) {
+        if (top_solid - 1 >= 0 && top_solid - 1 < this->height)
+            this->pixels[(top_solid - 1) * this->width + col] = top_px;
+        for (int row = top_solid; row < bot_solid && row < this->height; row++)
+            if (row >= 0) this->pixels[row * this->width + col] = wall_px;
+        if (bot_solid >= 0 && bot_solid < this->height)
+            this->pixels[bot_solid * this->width + col] = bot_px;
     }
 }
 
