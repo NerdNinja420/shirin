@@ -109,7 +109,12 @@ void Raycaster::render(const Scene &scene, const Player &player, Renderer &r) {
 
         int cell_col = (int)floorf(hit.x);
         int cell_row = (int)floorf(hit.y);
-        Color color = apply_fog(Color::from_cell(scene.cell_at(cell_col, cell_row)), perp_dist);
+        // EW hit → ray crossed a vertical grid line   → hit.x ≈ integer → full brightness
+        // NS hit → ray crossed a horizontal grid line → hit.y ≈ integer → half brightness
+        bool ew_hit = fabsf(hit.x - roundf(hit.x)) < fabsf(hit.y - roundf(hit.y));
+        Color base = Color::from_cell(scene.cell_at(cell_col, cell_row));
+        if (!ew_hit) base = base.half();
+        Color color = apply_fog(base, perp_dist);
 
         r.set_color(color);
         r.fill_rect((float)x * strip_w, y_top, strip_w + 1.0f, y_bottom - y_top);
