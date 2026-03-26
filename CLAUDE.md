@@ -102,6 +102,31 @@ gives smooth wall-sliding.
 `Renderer::set_color(Color)` handles the SDL conversion internally (reads `c.r, c.g, c.b`
 directly) — `Color` itself has no SDL dependency.
 
+### Commit conventions
+
+Use actual emoji characters (not `:name:` syntax):
+
+| # | Emoji | Type | When to use |
+|---|-------|------|-------------|
+| 1 | 🎨 | `style` | formatting, whitespace changes |
+| 2 | ⚙️ | `conf` | change configuration |
+| 3 | ✨ | `feat` | add new functionality |
+| 4 | 🩹 | `fix` | quick fix or correction |
+| 5 | 🐛 | `bug` | fix discovered bug |
+| 6 | 🚀 | `perf` | improve performance |
+| 7 | ♻️ | `refactor` | restructure code |
+| 8 | 🚚 | `move` | move or rename code |
+| 9 | 💣 | `breaking` | introduce breaking changes |
+| 10 | 🔀 | `merge` | merge branches |
+| 11 | 📦 | `deps` | update dependencies |
+| 12 | 📚 | `docs` | update documentation |
+| 13 | 🧪 | `test` | add or update tests |
+| 14 | 🔧 | `chore` | maintenance tasks |
+| 15 | 🔒 | `security` | fix security issues |
+| 16 | 🛠️ | `env` | development environment |
+| 17 | 📝 | `revert` | revert changes |
+| 18 | 🎯 | `wip` | work in progress |
+
 ### Coding conventions
 
 - **No C++ initializer-list constructors.** All types use static factory methods:

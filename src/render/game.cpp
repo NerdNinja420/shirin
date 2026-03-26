@@ -27,7 +27,7 @@ Game Game::New(const char *title, int width, int height, Player player, std::vec
     g.player = player;
     g.scenes[0].enter(g.player);
     g.raycaster = Raycaster::New();
-    g.renderer = Renderer::New(win, width, height);
+    g.renderer = Renderer::New(win);
     return g;
 }
 
