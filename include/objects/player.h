@@ -1,10 +1,9 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
-#include "math/vec2.h"
+#include "objects/entity.h"
 
-struct Player {
-    Vec2 position;
+struct Player : public Entity {
     float direction; // radians; 0 = right, π/2 = down
 
     static Player New(Vec2 position, float direction);

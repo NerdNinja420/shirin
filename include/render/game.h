@@ -2,6 +2,7 @@
 #define GAME_H_
 
 #include <SDL3/SDL.h>
+#include <stdexcept>
 #include <vector>
 
 #include "objects/player.h"
@@ -20,16 +21,21 @@ struct Game {
     int width, height; // actual window dimensions, set from display in New()
 
     Scene &current_scene() {
+        if (this->active < 0 || this->active >= (int)this->scenes.size())
+            throw std::out_of_range("active scene index out of range");
         return this->scenes[this->active];
     }
     const Scene &current_scene() const {
+        if (this->active < 0 || this->active >= (int)this->scenes.size())
+            throw std::out_of_range("active scene index out of range");
         return this->scenes[this->active];
     }
 
-    // Calls exit(1) on any initialisation failure.
+    // Throws std::runtime_error on any initialisation failure.
     // Window size is 90% x 80% of the primary display.
     // scenes[0].enter() sets player position to the first scene's spawn.
     static Game New(const char *title, Player player, std::vector<Scene> scenes);
+    // Saves active scene index to save.dat before tearing down SDL.
     void destroy();
 
     Input poll_events();
