@@ -28,12 +28,24 @@
 - SDL3 (`libsdl3-dev` or equivalent)
 - GNU Make
 
-## Building
+## Building (Recommended)
 
 ```sh
 make compile   # build
 make run       # build and run
 make clean     # remove build artifacts
+```
+
+## Building with Meson + Ninja
+
+- `meson` ≥ 1.0
+- `ninja`
+
+```sh
+meson setup build   # configure (once)
+ninja -C build      # build
+./build/shirin      # run
+ninja -C build -t clean  # clean
 ```
 
 ## Resources
