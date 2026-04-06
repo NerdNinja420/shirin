@@ -3,13 +3,13 @@
 #include "utils/logger.h"
 
 #include <cmath>
-#include <cstdlib>
+#include <fstream>
 #include <functional>
+#include <stdexcept>
 
 Game Game::New(const char *title, Player player, std::vector<Scene> scenes) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        logger::error("SDL_Init failed: %s", SDL_GetError());
-        exit(1);
+        throw std::runtime_error(std::string("SDL_Init failed: ") + SDL_GetError());
     }
 
     SDL_Rect bounds;
@@ -19,9 +19,8 @@ Game Game::New(const char *title, Player player, std::vector<Scene> scenes) {
 
     SDL_Window *win = SDL_CreateWindow(title, width, height, 0);
     if (!win) {
-        logger::error("SDL_CreateWindow failed: %s", SDL_GetError());
         SDL_Quit();
-        exit(1);
+        throw std::runtime_error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());
     }
 
     SDL_SetWindowRelativeMouseMode(win, true);
@@ -33,13 +32,26 @@ Game Game::New(const char *title, Player player, std::vector<Scene> scenes) {
     g.active = 0;
     g.scenes = scenes;
     g.player = player;
-    g.scenes[0].enter(g.player);
+
+    // Load last active scene from save file if present.
+    {
+        std::ifstream f("save.dat");
+        int saved = 0;
+        if (f >> saved && saved >= 0 && saved < (int)g.scenes.size()) g.active = saved;
+    }
+
+    g.scenes[g.active].enter(g.player);
     g.raycaster = Raycaster::New();
     g.renderer = Renderer::New(win);
     return g;
 }
 
 void Game::destroy() {
+    // Persist active scene so the next run resumes from the same scene.
+    {
+        std::ofstream f("save.dat");
+        if (f.is_open()) f << this->active;
+    }
     this->renderer.destroy();
     SDL_DestroyWindow(this->window);
     SDL_Quit();
