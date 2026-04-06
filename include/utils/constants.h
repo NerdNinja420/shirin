@@ -8,7 +8,7 @@ namespace Constants {
 
     constexpr float GAB_FACTOR = 0.02f;
     constexpr float INFINITY_VAL = 1e30f;
-    // Camera plane distance of 1 + half-width of 1 → 90° FOV (tan 45° = 1).
+    // Camera plane distance of 1 + half-width of 1 → 90^\circ FOV.
     constexpr float CAMERA_PLANE_DIST = 1.0f;
     constexpr float MOVE_SPEED = 6.0f; // units per second (≡ 0.1 × 60 fps)
     constexpr float MOUSE_SENSITIVITY = 0.002f;

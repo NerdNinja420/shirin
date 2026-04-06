@@ -11,7 +11,7 @@ class Color {
 
     static Color New(uint8_t r, uint8_t g, uint8_t b);
 
-    // Maps cell value to wall color: 1→RED, 2→PINK, 3→MAROON, 4→SKY, else→BASE.
+    // Maps cell value to wall color: 1→RED, 2→PINK, 3→MAROON, 4→SKY, 5→PEACH else→BASE.
     static Color from_cell(int cell_value);
     // Returns a new Color with each channel halved (NS wall face darkening).
     Color half() const;
@@ -31,7 +31,7 @@ class Color {
     static const Color BASE;
     static const Color MANTLE;
     static const Color CRUST;
-    static const Color PEACH; // portal cells on the minimap
+    static const Color PEACH;
 };
 
 #endif

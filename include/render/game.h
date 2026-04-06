@@ -27,7 +27,7 @@ struct Game {
     }
 
     // Calls exit(1) on any initialisation failure.
-    // Window size is 90% × 80% of the primary display.
+    // Window size is 90% x 80% of the primary display.
     // scenes[0].enter() sets player position to the first scene's spawn.
     static Game New(const char *title, Player player, std::vector<Scene> scenes);
     void destroy();
