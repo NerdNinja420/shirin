@@ -1,4 +1,4 @@
-AllowShortFunctionsOnASingleLine: Empty                # Only empty function bodies on one line (Empty, All)
+AllowShortFunctionsOnASingleLine: Empty               # Only empty function bodies on one line (Empty, All)
 AllowShortBlocksOnASingleLine: Empty                  # Only empty blocks on one line 
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse    # Allow if/else on one line 
 # AwShortCaseLabelsOnASingleLine: true                # Allow short case labels on one line
