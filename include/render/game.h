@@ -16,7 +16,8 @@ struct Game {
     Player player;
     Raycaster raycaster;
     std::vector<Scene> scenes;
-    int active; // index of the current scene
+    int active;        // index of the current scene
+    int width, height; // actual window dimensions, set from display in New()
 
     Scene &current_scene() {
         return this->scenes[this->active];
@@ -26,9 +27,9 @@ struct Game {
     }
 
     // Calls exit(1) on any initialisation failure.
+    // Window size is 90% × 80% of the primary display.
     // scenes[0].enter() sets player position to the first scene's spawn.
-    static Game
-    New(const char *title, int width, int height, Player player, std::vector<Scene> scenes);
+    static Game New(const char *title, Player player, std::vector<Scene> scenes);
     void destroy();
 
     Input poll_events();

@@ -1,6 +1,9 @@
 #include "objects/scene.h"
 #include "objects/player.h"
 #include "render/renderer.h"
+#include "utils/constants.h"
+
+#include <algorithm>
 
 static Vec2 world_to_minimap(Vec2 world_pos, int cell_size, int h_gab, int v_gab) {
     Vec2 px;
@@ -27,23 +30,31 @@ void Scene::enter(Player &player) const {
     player.position = this->spawn;
 }
 
-void Scene::render_minimap(Renderer &r, const Player &player) const {
+void Scene::render_minimap(Renderer &r, const Player &player, int win_w, int win_h) const {
+    int minimap_w = win_w / 3;
+    int minimap_h = win_h / 3;
+    int gab_px = (int)(Constants::GAB_FACTOR * minimap_w);
+    int cell_size =
+        std::min((minimap_w - 2 * gab_px) / this->cols, (minimap_h - 2 * gab_px) / this->rows);
+    int h_gab = (minimap_w - cell_size * this->cols) / 2;
+    int v_gab = (minimap_h - cell_size * this->rows) / 2;
+
     r.set_color(Color::BASE);
-    r.fill_rect(0.0f, 0.0f, (float)Constants::MINIMAP_W, (float)Constants::MINIMAP_H);
+    r.fill_rect(0.0f, 0.0f, (float)minimap_w, (float)minimap_h);
 
     r.set_color(Color::RED);
 
     for (int i = 0; i <= this->rows; i++) {
-        float y = (float)(i * this->cell_size + this->v_gab);
-        float x0 = (float)this->h_gab;
-        float x1 = (float)(this->h_gab + this->cell_size * this->cols);
+        float y = (float)(i * cell_size + v_gab);
+        float x0 = (float)h_gab;
+        float x1 = (float)(h_gab + cell_size * this->cols);
         r.draw_line(x0, y, x1, y);
     }
 
     for (int i = 0; i <= this->cols; i++) {
-        float x = (float)(i * this->cell_size + this->h_gab);
-        float y0 = (float)this->v_gab;
-        float y1 = (float)(this->v_gab + this->cell_size * this->rows);
+        float x = (float)(i * cell_size + h_gab);
+        float y0 = (float)v_gab;
+        float y1 = (float)(v_gab + cell_size * this->rows);
         r.draw_line(x, y0, x, y1);
     }
 
@@ -52,16 +63,16 @@ void Scene::render_minimap(Renderer &r, const Player &player) const {
             int cell = this->map[row * this->cols + col];
             if (cell == 5) {
                 r.set_color(Color::PEACH);
-                r.fill_rect((float)(col * this->cell_size + this->h_gab + 1),
-                            (float)(row * this->cell_size + this->v_gab + 1),
-                            (float)(this->cell_size - 1),
-                            (float)(this->cell_size - 1));
+                r.fill_rect((float)(col * cell_size + h_gab + 1),
+                            (float)(row * cell_size + v_gab + 1),
+                            (float)(cell_size - 1),
+                            (float)(cell_size - 1));
             } else if (cell >= 1) {
                 r.set_color(Color::SURFACE2);
-                r.fill_rect((float)(col * this->cell_size + this->h_gab + 1),
-                            (float)(row * this->cell_size + this->v_gab + 1),
-                            (float)(this->cell_size - 1),
-                            (float)(this->cell_size - 1));
+                r.fill_rect((float)(col * cell_size + h_gab + 1),
+                            (float)(row * cell_size + v_gab + 1),
+                            (float)(cell_size - 1),
+                            (float)(cell_size - 1));
             }
         }
     }
@@ -69,11 +80,10 @@ void Scene::render_minimap(Renderer &r, const Player &player) const {
     Vec2 r1, r2;
     player.get_fov_range(r1, r2);
 
-    Vec2 px_player = world_to_minimap(player.position, this->cell_size, this->h_gab, this->v_gab);
-    Vec2 px_r1 = world_to_minimap(r1, this->cell_size, this->h_gab, this->v_gab);
-    Vec2 px_r2 = world_to_minimap(r2, this->cell_size, this->h_gab, this->v_gab);
-    Vec2 px_cam_center =
-        world_to_minimap(player.camera_center(), this->cell_size, this->h_gab, this->v_gab);
+    Vec2 px_player = world_to_minimap(player.position, cell_size, h_gab, v_gab);
+    Vec2 px_r1 = world_to_minimap(r1, cell_size, h_gab, v_gab);
+    Vec2 px_r2 = world_to_minimap(r2, cell_size, h_gab, v_gab);
+    Vec2 px_cam_center = world_to_minimap(player.camera_center(), cell_size, h_gab, v_gab);
 
     r.set_color(Color::FLAMINGO);
     r.fill_circle(px_player.x, px_player.y, Constants::PLAYER_DOT_RADIUS);

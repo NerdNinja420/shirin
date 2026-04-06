@@ -1,7 +1,6 @@
 #include "objects/player.h"
 #include "objects/scene.h"
 #include "render/game.h"
-#include "utils/constants.h"
 #include "utils/logger.h"
 
 #include <SDL3/SDL.h>
@@ -11,8 +10,6 @@ int main(void) {
     Player player = Player::New(Vec2::New(0.0f, 0.0f), 0.0f);
 
     Game game = Game::New("Shirin — C++ / SDL3 raycaster",
-                          Constants::WIN_WIDTH,
-                          Constants::WIN_HEIGHT,
                           player,
                           {Scenes::THE_KEEP, Scenes::THE_DEPTHS, Scenes::THE_CRYPT});
 
@@ -30,8 +27,12 @@ int main(void) {
 
         game.handle_input(input, dt);
 
-        game.raycaster.render(game.current_scene(), game.player, game.renderer);
-        game.current_scene().render_minimap(game.renderer, game.player);
+        game.raycaster.render(game.current_scene(),
+                              game.player,
+                              game.renderer,
+                              game.width,
+                              game.height);
+        game.current_scene().render_minimap(game.renderer, game.player, game.width, game.height);
 
         game.renderer.present();
 
