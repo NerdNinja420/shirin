@@ -1,3 +1,6 @@
 build/
 .cache/
+.zip-staging/
 compile_commands.json
+save.dat
+shirin.zip
