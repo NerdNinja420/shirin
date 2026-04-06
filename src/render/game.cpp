@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <functional>
 
 Game Game::New(const char *title, Player player, std::vector<Scene> scenes) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -48,7 +49,8 @@ void Game::destroy() {
 void Game::try_move(Vec2 delta) {
     float m = Constants::COLLISION_MARGIN;
 
-    auto blocked = [&](Vec2 pos) -> bool {
+    // [&] means that the lambda captures the scopes variables by reference
+    std::function<bool(Vec2)> blocked = [&](Vec2 pos) -> bool {
         return this->current_scene().is_wall((int)(pos.x + m), (int)(pos.y + m)) ||
                this->current_scene().is_wall((int)(pos.x - m), (int)(pos.y + m)) ||
                this->current_scene().is_wall((int)(pos.x + m), (int)(pos.y - m)) ||
@@ -73,6 +75,8 @@ void Game::try_move(Vec2 delta) {
     }
 }
 
+// TODO: Add support for portal to specific scenes.
+// TODO: Add support for several portals in one scene.
 void Game::check_portal() {
     int col = (int)floorf(this->player.position.x);
     int row = (int)floorf(this->player.position.y);
@@ -83,13 +87,13 @@ void Game::check_portal() {
 }
 
 void Game::handle_input(const Input &input, float dt) {
+    float m = Constants::MOVE_SPEED;
+
     this->player.direction += input.mouse_dx * Constants::MOUSE_SENSITIVITY;
-    if (input.forward) this->try_move(this->player.direction_vec() * Constants::MOVE_SPEED * dt);
-    if (input.backward) this->try_move(this->player.direction_vec() * -Constants::MOVE_SPEED * dt);
-    if (input.strafe_left)
-        this->try_move(-this->player.direction_vec().rot90() * Constants::MOVE_SPEED * dt);
-    if (input.strafe_right)
-        this->try_move(this->player.direction_vec().rot90() * Constants::MOVE_SPEED * dt);
+    if (input.forward) this->try_move(this->player.direction_vec() * m * dt);
+    if (input.backward) this->try_move(this->player.direction_vec() * -m * dt);
+    if (input.strafe_left) this->try_move(-this->player.direction_vec().rot90() * m * dt);
+    if (input.strafe_right) this->try_move(this->player.direction_vec().rot90() * m * dt);
     this->check_portal();
 }
 

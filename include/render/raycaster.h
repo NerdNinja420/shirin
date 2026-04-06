@@ -16,12 +16,7 @@ struct Raycaster {
     // Snaps p to the nearest grid boundary in direction delta, then advances
     // by 1 ULP via nextafterf() — avoids the fixed-epsilon precision trap.
     float snap(float p, float delta) const;
-
     Vec2 ray_step(Vec2 p1, Vec2 p2) const;
-
-    // Walk starts from p1 (player), not p2. p2 sets direction only.
-    // Starting from p1 prevents walls between player and camera plane
-    // being skipped (fixes see-through artifact at FOV edges).
     bool cast_ray(Vec2 p1, Vec2 p2, const Scene &scene, Vec2 &hit) const;
 };
 
