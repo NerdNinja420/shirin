@@ -42,11 +42,25 @@ make clean     # remove build artifacts
 - `ninja`
 
 ```sh
-meson setup build   # configure (once)
-ninja -C build      # build
-./build/shirin      # run
+meson setup build        # configure (once)
+ninja -C build           # build
+./build/shirin           # run
 ninja -C build -t clean  # clean
 ```
+
+## Note
+
+The author values transparency — `CLAUDE.md` is intentionally left in `main`.
+
+The following were generated with AI assistance (Claude Sonnet 4.6):
+
+- **Documentation** — `README.md`, `CLAUDE.md` and verious other doxygen documentation
+- **Level maps** — `THE_KEEP`, `THE_DEPTHS`, `THE_CRYPT` grid layouts (`include/objects/scene.h`)
+- **`makeFile`** — makefile with incremental build
+- **`meson.build`** — alternative build system boilerplate
+- **`include/utils/logger.h`** — header-only logging utility
+- **`include/utils/color.h`** — data class storing rgb values
+- **Git commits** — all commits from `7e228abf` onward written by Claude using specs defined in `CLAUDE.md`
 
 ## Resources
 

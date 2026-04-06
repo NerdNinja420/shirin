@@ -9,98 +9,134 @@ repository.
 make compile        # Build (incremental; dependency tracking via -MMD -MP)
 make run            # Build and run
 make clean          # Remove build/
-make F=scene        # Compile only src/world/scene.cpp (single-file syntax check)
+make F=scene        # Compile only src/objects/scene.cpp (single-file syntax check)
+```
+
+```bash
+meson setup build   # Configure (once)
+ninja -C build      # Build
 ```
 
 No tests exist — verify changes by running the game.
 
 ## Architecture
 
-A C++ / SDL3 raycasting engine. The goal was minimal C++ (structs +
-static factory methods, no initializer-list constructors, no RAII classes), targeting C23 style with
-operator overloading where useful.
+A C++23 / SDL3 raycasting engine. Design goal: minimal C++ (structs + static factory methods,
+no initializer-list constructors, no RAII classes), targeting C23 style with operator overloading
+where useful.
 
 ### Layer structure
 
-The project is split into four logical layers, each in its own subdirectory:
-
 ```
 include/math/     src/math/       Pure math — Vec2. No SDL, no game state.
-include/world/    src/world/      Game domain — Color, Constants, Scene, Player. No SDL.
-include/input/                    Input snapshot struct (Input). No SDL.
-include/render/   src/render/     SDL3 abstraction + rendering — Renderer, Texture, Game,
-                                  Raycaster, Minimap. SDL3 is confined here.
+include/objects/  src/objects/    Game domain — Color, Scene, Player. No SDL.
+include/utils/                    Constants, Input, logger. No SDL.
+include/render/   src/render/     SDL3 + rendering — Renderer, Game, Raycaster. SDL3 confined here.
 ```
 
-**SDL isolation rule**: SDL3 headers (`#include <SDL3/SDL.h>`) appear in exactly two files:
-`src/render/renderer.cpp` and `src/render/game.cpp`. No other file — especially no header —
-includes SDL directly. All other code uses `Renderer`, `Texture`, and `Game` from
-`include/render/renderer.h` / `include/render/game.h`.
+**SDL isolation rule**: `#include <SDL3/SDL.h>` appears in exactly two `.cpp` files:
+`src/render/game.cpp` and `src/render/renderer.cpp`. No header includes SDL directly.
 
 ### Rendering pipeline (each frame)
 
 ```
-Game::begin_frame()        → record frame-start tick
-Game::poll_events()        → SDL events translated to Input struct
-player.direction +=        → mouse look applied directly
-Player::handle_input()     → movement + AABB collision
-Raycaster::render()        → writes 3D view into raycaster.texture
-Minimap::render()          → writes overlay into minimap.texture
-game.renderer.clear()
-game.renderer.blit(...)    → composite both textures onto window
-Game::end_frame()          → SDL_RenderPresent + frame-cap sleep
+Game::poll_events()           → SDL event queue → Input struct
+Game::handle_input(input, dt) → mouse look + WASD movement (delta-time scaled) + portal check
+Raycaster::render(...)        → ceiling/floor halves + wall strips directly into SDL renderer
+Scene::render_minimap(...)    → top-down overlay drawn into SDL renderer
+Renderer::present()           → SDL_RenderPresent
+logger::info("FPS: %d", n)    → printed to stdout once per second
 ```
 
-Both `Raycaster` and `Minimap` render into their own `Texture` (TEXTUREACCESS_TARGET) by
-calling `r.set_target(texture)`, then `r.reset_target()` when done. `main.cpp` composites
-them with `game.renderer.blit()`.
+No FPS cap. Window opens at 90 % × 80 % of the primary display.
 
-### SDL abstraction (Renderer + Texture + Game)
+### Renderer
 
-`Renderer` and `Texture` store their SDL handles as `void*` (cast to `SDL_Renderer*` /
-`SDL_Texture*` inside `renderer.cpp`). This keeps SDL types completely out of all headers
-outside the render layer.
+`Renderer` owns only `SDL_Renderer *sdl_renderer` — no CPU pixel buffer, no streaming texture.
+All drawing uses SDL3 primitives directly:
 
-`Game` owns the SDL_Window and Renderer. `Game::poll_events()` translates the full SDL
-event queue into a plain `Input` struct — the only place SDL scancodes and event types appear.
+| Method | SDL3 call |
+|---|---|
+| `set_color(Color)` | `SDL_SetRenderDrawColor` |
+| `clear()` | `SDL_RenderClear` |
+| `fill_rect / draw_rect` | `SDL_RenderFillRect / SDL_RenderRect` |
+| `draw_line` | `SDL_RenderLine` |
+| `plot` (private) | `SDL_RenderPoint` |
+| `fill_column_aa` | three `SDL_RenderFillRect` calls (top blend, body, bottom blend) |
+| `present()` | `SDL_RenderPresent` |
+
+Window size is queried with `SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &bounds)` in
+`Game::New` and stored in `Game.width` / `Game.height`. These are threaded into
+`Raycaster::render` and `Scene::render_minimap` at call time.
 
 ### DDA raycasting (Raycaster)
 
-Key design choices that differ from typical tutorials:
+Key design choices:
 
-- **Ray origin is the player position**, not the camera-plane point. `cast_ray(p1, p2)` extracts
-  direction from `p2-p1` but starts walking from `p1`. This prevents walls between the player
-  and camera plane from being skipped ("see-through at FOV edges").
-- **`snap()` uses `nextafterf()`** rather than a fixed epsilon (`+1e-6f`). Fixed epsilons become
-  no-ops at larger coordinate values (IEEE 754 ULP issue); `nextafterf` always advances exactly 1
-  ULP.
+- **Ray starts from the player**, not the camera-plane point. `cast_ray(p1, p2)` extracts
+  direction from `p2-p1` but walks from `p1`. Prevents walls between player and camera plane
+  from being skipped ("see-through at FOV edges").
+- **`snap()` uses `nextafterf()`** rather than a fixed epsilon. Fixed epsilons fail at larger
+  coordinates (IEEE 754 ULP issue); `nextafterf` always advances exactly 1 ULP.
 - **Perpendicular distance** = `dot(hit - player.position, direction_vec())`. Avoids fisheye.
+- **NS/EW lighting**: EW hits (ray crossed a vertical grid line, `hit.x ≈ integer`) → full
+  brightness; NS hits → `color.half()` (each channel `>> 1`).
+- **Analytical edge AA**: `fill_column_aa` blends the top pixel (ceiling→wall) and bottom pixel
+  (wall→floor) by sub-pixel coverage fraction of `y_top` / `y_bottom`.
 
 ### Camera plane / FOV
 
 `Player::get_fov_range(r1, r2)` builds a 90° FOV:
 ```
-p    = position + direction_vec * CAMERA_PLANE_DIST   (CAMERA_PLANE_DIST = 1.0)
-perp = (p - position).rot90()                         (already unit length)
+p    = position + direction_vec * CAMERA_PLANE_DIST   (= 1.0)
+perp = p.rot90()                                      (unit length)
 r1   = p - perp
 r2   = p + perp
 ```
-The raycaster lerps `t ∈ [0,1)` across `[r1, r2]` for each of the `RES` vertical columns.
+Raycaster lerps `t ∈ [0,1)` across `[r1, r2]` for each of the `RES` vertical columns.
+
+### Scene
+
+`Scene` stores `cols`, `rows`, `spawn`, and `const int *map` (flat 1D row-major).
+`cell_size`, `h_gab`, `v_gab` are **not** stored — minimap layout is computed locally inside
+`render_minimap(Renderer&, const Player&, int win_w, int win_h)` every frame.
+
+`Scene::New` is `constexpr`; the three instances are `inline constexpr` in `include/objects/scene.h`:
+```cpp
+inline constexpr Scene THE_KEEP   = Scene::New(A, 32, 15, Vec2::New(7.5f, 5.5f));
+inline constexpr Scene THE_DEPTHS = Scene::New(B, 64, 31, Vec2::New(2.5f, 2.5f));
+inline constexpr Scene THE_CRYPT  = Scene::New(C, 24, 20, Vec2::New(2.5f, 2.5f));
+```
+
+Cell values: `0` = floor, `1–4` = wall types (color via `Color::from_cell`), `5` = portal
+(passable; triggers scene transition in `Game::check_portal`).
+
+Maps use flat 1D arrays (not `int[R][C]`) so they decay to `const int*` without a
+`reinterpret_cast`, keeping `Scene::New` usable in `constexpr` context.
 
 ### Collision
 
-`Player::try_move(delta, scene)` uses a 4-corner AABB (±`COLLISION_MARGIN` = 0.2 world units).
-Collision response is axis-separated: if the full move is blocked, try X-only, then Y-only — this
-gives smooth wall-sliding.
+`Game::try_move(delta)` uses a 4-corner AABB (± `COLLISION_MARGIN` = 0.2 world units).
+Response is axis-separated: full move → X-only → Y-only, giving smooth wall-sliding.
 
 ### Color
 
-`Color` (in `include/world/color.h`) is a single class that combines the old `struct Color` and
-`namespace Colors`. Palette entries are static const members: `Color::MANTLE`, `Color::RED`, etc.
-`Color::from_cell(int)` replaces the old free function `wall_color(int)`.
+`Color` (`include/utils/color.h`) stores `uint8_t r, g, b`. Palette entries are `static const`
+members (`Color::MANTLE`, `Color::RED`, etc. — Catppuccin Mocha). Key methods:
+- `Color::from_cell(int)` — maps cell value to wall color
+- `Color::half()` — each channel `>> 1` (NS face shading)
+- `Color::lerp(Color, float)` — linear interpolation (fog, AA blending)
 
-`Renderer::set_color(Color)` handles the SDL conversion internally (reads `c.r, c.g, c.b`
-directly) — `Color` itself has no SDL dependency.
+### Key constants (`include/utils/constants.h`)
+
+| Constant | Value | Purpose |
+|---|---|---|
+| `RES` | 5000 | Ray columns (higher = sharper, slower) |
+| `MOVE_SPEED` | 6.0 | Player speed in world units/second |
+| `MOUSE_SENSITIVITY` | 0.002 | Radians per pixel of horizontal mouse movement |
+| `FOG_DISTANCE` | 10.0 | World units at which walls are fully fogged |
+| `COLLISION_MARGIN` | 0.2 | Player AABB half-width |
+| `CAMERA_PLANE_DIST` | 1.0 | Distance to camera plane (sets 90° FOV) |
 
 ### Commit conventions
 
@@ -133,21 +169,6 @@ Use actual emoji characters (not `:name:` syntax):
   ```cpp
   TypeName TypeName::New(...) { TypeName t; t.field = val; return t; }
   ```
-- **No heap allocation** (no `new`/`delete`). SDL resources are raw pointers stored as `void*`
-  in Renderer/Texture/Game; cleanup via `destroy()`.
-- Structs own SDL resources when created via their `New()` factories; `Renderer` references passed
-  to `Raycaster::New` / `Minimap::New` are non-owning (the `Game` owns the renderer lifetime).
-
-### Key constants to tune
-
-All in `include/world/constants.h`:
-- `RES` — number of ray columns (currently 5000; higher = sharper, slower)
-- `FOG_DISTANCE` — world units at which walls are fully fogged (currently 10.0)
-- `COLLISION_MARGIN` — player AABB half-width (currently 0.2)
-- `MOUSE_SENSITIVITY` — radians per pixel of horizontal mouse movement
-
-### Map
-
-`Scene::New()` initialises the 32×15 grid hardcoded in `src/world/scene.cpp`. Cell values:
-0 = empty, 1–4 = wall types (colors differ via `Color::from_cell`). Player spawns at
-`(7.5, 5.5)` facing `π * 1.25`.
+- **No heap allocation** (`new`/`delete`). SDL resources are raw pointers managed by `destroy()`.
+- **`this->` on every member access** — project-wide convention, no exceptions.
+- **`inline constexpr`** for header-defined data that must be ODR-safe across TUs.
