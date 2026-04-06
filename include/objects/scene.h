@@ -1,10 +1,7 @@
 #ifndef SCENE_H_
 #define SCENE_H_
 
-#include <algorithm>
-
 #include "math/vec2.h"
-#include "utils/constants.h"
 
 struct Player;
 struct Renderer;
@@ -12,9 +9,6 @@ struct Renderer;
 struct Scene {
     int cols;
     int rows;
-    int cell_size;  // minimap: pixel size of one grid cell
-    int h_gab;      // minimap: left/right pixel margin
-    int v_gab;      // minimap: top/bottom pixel margin
     Vec2 spawn;     // player position set by enter()
     const int *map; // flat row-major: map[row * cols + col]
 
@@ -24,13 +18,6 @@ struct Scene {
         s.cols = cols;
         s.rows = rows;
         s.spawn = spawn;
-
-        int gab_px = (int)(Constants::GAB_FACTOR * Constants::MINIMAP_W);
-        s.cell_size = std::min((Constants::MINIMAP_W - 2 * gab_px) / cols,
-                               (Constants::MINIMAP_H - 2 * gab_px) / rows);
-        s.h_gab = (Constants::MINIMAP_W - s.cell_size * cols) / 2;
-        s.v_gab = (Constants::MINIMAP_H - s.cell_size * rows) / 2;
-
         return s;
     }
 
@@ -43,7 +30,7 @@ struct Scene {
     // Set player.position to this scene's spawn point.
     void enter(Player &player) const;
     // Render the top-down minimap overlay into r's framebuffer (top-left corner).
-    void render_minimap(Renderer &r, const Player &player) const;
+    void render_minimap(Renderer &r, const Player &player, int win_w, int win_h) const;
 };
 
 //

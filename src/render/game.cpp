@@ -5,11 +5,16 @@
 #include <cmath>
 #include <cstdlib>
 
-Game Game::New(const char *title, int width, int height, Player player, std::vector<Scene> scenes) {
+Game Game::New(const char *title, Player player, std::vector<Scene> scenes) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         logger::error("SDL_Init failed: %s", SDL_GetError());
         exit(1);
     }
+
+    SDL_Rect bounds;
+    SDL_GetDisplayBounds(SDL_GetPrimaryDisplay(), &bounds);
+    int width = (int)(bounds.w * 0.9f);
+    int height = (int)(bounds.h * 0.8f);
 
     SDL_Window *win = SDL_CreateWindow(title, width, height, 0);
     if (!win) {
@@ -22,6 +27,8 @@ Game Game::New(const char *title, int width, int height, Player player, std::vec
 
     Game g;
     g.window = win;
+    g.width = width;
+    g.height = height;
     g.active = 0;
     g.scenes = scenes;
     g.player = player;

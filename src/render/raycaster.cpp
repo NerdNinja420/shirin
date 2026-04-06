@@ -75,21 +75,22 @@ static Color apply_fog(Color c, float perp_dist) {
                       (uint8_t)((float)c.b * (1.0f - t) + (float)fog.b * t));
 }
 
-void Raycaster::render(const Scene &scene, const Player &player, Renderer &r) {
+void Raycaster::render(const Scene &scene,
+                       const Player &player,
+                       Renderer &r,
+                       int win_w,
+                       int win_h) {
     r.set_color(Color::MANTLE);
-    r.fill_rect(0.0f, 0.0f, (float)Constants::WIN_WIDTH, (float)Constants::WIN_HEIGHT * 0.5f);
+    r.fill_rect(0.0f, 0.0f, (float)win_w, (float)win_h * 0.5f);
 
     r.set_color(Color::SURFACE0);
-    r.fill_rect(0.0f,
-                (float)Constants::WIN_HEIGHT * 0.5f,
-                (float)Constants::WIN_WIDTH,
-                (float)Constants::WIN_HEIGHT * 0.5f);
+    r.fill_rect(0.0f, (float)win_h * 0.5f, (float)win_w, (float)win_h * 0.5f);
 
     Vec2 r1, r2;
     player.get_fov_range(r1, r2);
 
     Vec2 dir = player.direction_vec();
-    float strip_w = (float)Constants::WIN_WIDTH / (float)Constants::RES;
+    float strip_w = (float)win_w / (float)Constants::RES;
 
     for (int x = 0; x < Constants::RES; x++) {
         float t = (float)x / (float)Constants::RES;
@@ -103,9 +104,9 @@ void Raycaster::render(const Scene &scene, const Player &player, Renderer &r) {
 
         if (perp_dist <= 0.0f) continue;
 
-        float height = (float)Constants::WIN_HEIGHT / perp_dist;
-        float y_top = ((float)Constants::WIN_HEIGHT - height) * 0.5f;
-        float y_bottom = ((float)Constants::WIN_HEIGHT + height) * 0.5f;
+        float height = (float)win_h / perp_dist;
+        float y_top = ((float)win_h - height) * 0.5f;
+        float y_bottom = ((float)win_h + height) * 0.5f;
 
         int cell_col = (int)floorf(hit.x);
         int cell_row = (int)floorf(hit.y);

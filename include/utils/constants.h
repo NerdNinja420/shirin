@@ -3,8 +3,6 @@
 
 namespace Constants {
 
-    constexpr int WIN_WIDTH = 1280;
-    constexpr int WIN_HEIGHT = 720;
     // Number of vertical ray columns — higher = sharper, slower.
     constexpr int RES = 5000;
 
@@ -17,9 +15,6 @@ namespace Constants {
     constexpr float COLLISION_MARGIN = 0.2f;
     constexpr float FOG_DISTANCE = 10.0f;
     constexpr float PLAYER_DOT_RADIUS = 5.0f;
-
-    constexpr int MINIMAP_W = WIN_WIDTH / 3;
-    constexpr int MINIMAP_H = WIN_HEIGHT / 3;
 
 } // namespace Constants
 
