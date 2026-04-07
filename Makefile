@@ -55,9 +55,10 @@ zip: compile
 	mkdir -p $(ZIP_STAGING)/lib
 	$(CXX) $(OBJECTS) -o $(ZIP_STAGING)/shirin $(LIBS_LDFLAGS) -Wl,-rpath,'$$ORIGIN/lib'
 	cp $$(ldd $(ZIP_STAGING)/shirin | grep -o '/[^ ]*libSDL3[^ ]*' | head -1) $(ZIP_STAGING)/lib/
-	cp -r src include Makefile meson.build README.md CLAUDE.md $(ZIP_STAGING)/
-	cd $(ZIP_STAGING) && zip -r ../$(ZIP_NAME) .
-	rm -rf $(ZIP_STAGING)
+	cp -r src include assets .clang-format .clangd .gitignore compile_commands.json Makefile meson.build README.md CLAUDE.md $(ZIP_STAGING)/
+	mv $(ZIP_STAGING) shirin
+	zip -r $(ZIP_NAME) shirin
+	rm -rf shirin
 	@echo "→ $(ZIP_NAME)"
 
 .PHONY: all compile run clean zip
