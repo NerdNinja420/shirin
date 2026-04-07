@@ -1,6 +1,5 @@
 #include "render/game.h"
 #include "utils/constants.h"
-#include "utils/logger.h"
 
 #include <cmath>
 #include <fstream>
