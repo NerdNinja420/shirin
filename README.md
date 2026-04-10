@@ -27,6 +27,7 @@
 - `g++` with C++23 support
 - SDL3 (`libsdl3-dev` or equivalent)
 - GNU Make
+- Meson + Ninja (Optional)
 
 ## Building (Recommended)
 
